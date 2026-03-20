@@ -8,6 +8,10 @@ total_cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // empty')
 lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // empty')
 current_dir=$(echo "$input" | jq -r '.workspace.current_dir // empty')
+rl_5h_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' | awk '{printf "%.0f", $1}')
+rl_5h_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+rl_7d_pct=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+rl_7d_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 
 if [ -n "$used" ]; then
   used_display=$(printf "%.0f" "$used")
@@ -43,4 +47,34 @@ else
   block_str="\$0.00"
 fi
 
-printf "🤖 %s | 🧠 %s | 💰 %s\n🌳 %s | %s" "$model" "$usage_str" "$block_str" "$worktree_str" "$git_str"
+make_bar() {
+  pct="$1"
+  width=10
+  filled=$(( pct * width / 100 ))
+  empty=$(( width - filled ))
+  bar=""
+  i=0
+  while [ $i -lt $filled ]; do bar="${bar}█"; i=$(( i + 1 )); done
+  while [ $i -lt $width ];  do bar="${bar}░"; i=$(( i + 1 )); done
+  printf "%s" "$bar"
+}
+
+format_rl() {
+  pct="$1"
+  reset_ts="$2"
+  label="$3"
+  [ -z "$pct" ] && return
+  if [ "$pct" -ge 90 ]; then color="$RED"
+  elif [ "$pct" -ge 70 ]; then color="$YELLOW"
+  else color="$GREEN"
+  fi
+  reset_time=$(date -r "$reset_ts" "+%-I:%M%p" 2>/dev/null || date -d "@$reset_ts" "+%-I:%M%p" 2>/dev/null)
+  bar=$(make_bar "$pct")
+  printf "${color}${label} ${bar} ${pct}%% resets ${reset_time}${RESET}"
+}
+
+rate_limit_str=""
+rate_limit_str="${rate_limit_str}$(format_rl "$rl_5h_pct" "$rl_5h_reset" "5h")"
+# rate_limit_str="${rate_limit_str}$(format_rl "$rl_7d_pct" "$rl_7d_reset" "7d")"
+
+printf "🤖 %s | 🧠 %s | 💰 %s | ⏱️ %s\n🌳 %s | %s" "$model" "$usage_str" "$block_str" "$rate_limit_str" "$worktree_str" "$git_str"

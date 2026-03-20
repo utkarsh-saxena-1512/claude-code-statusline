@@ -7,7 +7,7 @@ A custom statusline script for [Claude Code](https://claude.ai/claude-code) that
 ## What It Shows
 
 ```
-🤖 Claude Sonnet 4.6 | 🧠 12% | 💰 $0.04
+🤖 Claude Sonnet 4.6 | 🧠 12% | 💰 $0.04 | ⏱️ 5h ████░░░░░░ 42% resets 2:00PM
 🌳 my-feature | 🌿 main +42 -7
 ```
 
@@ -16,6 +16,7 @@ A custom statusline script for [Claude Code](https://claude.ai/claude-code) that
 | 🤖 Model | Active Claude model name |
 | 🧠 Context | Context window usage percentage |
 | 💰 Cost | Cumulative session cost in USD |
+| ⏱️ Rate Limit | 5-hour rate limit usage bar, percentage, and reset time |
 | 🌳 Worktree | Active git worktree name |
 | 🌿 Branch | Current git branch with lines added/removed |
 
@@ -75,5 +76,13 @@ The script reads a JSON object from stdin with the following fields:
 | `cost.total_lines_added` | Lines added this session |
 | `cost.total_lines_removed` | Lines removed this session |
 | `workspace.current_dir` | Current working directory |
+| `rate_limits.five_hour.used_percentage` | 5-hour rate limit usage percentage |
+| `rate_limits.five_hour.resets_at` | Unix timestamp when 5-hour limit resets |
+| `rate_limits.seven_day.used_percentage` | 7-day rate limit usage percentage (available for optional display) |
+| `rate_limits.seven_day.resets_at` | Unix timestamp when 7-day limit resets (available for optional display) |
+
+The rate-limit bar uses color thresholds: green (<70%), yellow (70-89%), red (>=90%).
+
+By default, the script shows the 5-hour limit and keeps 7-day output commented out. You can enable 7-day display by uncommenting the `rate_limit_str` line near the bottom of `statusline-command.sh`.
 
 Edit `statusline-command.sh` to change the format, add new fields, or adjust colors.
