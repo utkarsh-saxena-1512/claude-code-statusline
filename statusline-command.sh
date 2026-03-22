@@ -77,4 +77,5 @@ rate_limit_str=""
 rate_limit_str="${rate_limit_str}$(format_rl "$rl_5h_pct" "$rl_5h_reset" "5h")"
 # rate_limit_str="${rate_limit_str}$(format_rl "$rl_7d_pct" "$rl_7d_reset" "7d")"
 
-printf "🤖 %s | 🧠 %s | 💰 %s | ⏱️ %s\n🌳 %s | %s" "$model" "$usage_str" "$block_str" "$rate_limit_str" "$worktree_str" "$git_str"
+dir_display=$(basename "$current_dir")
+printf "🤖 %s | 🧠 %s | 💰 %s | ⏱️ %s\n📁 %s | 🌳 %s | %s" "$model" "$usage_str" "$block_str" "$rate_limit_str" "$dir_display" "$worktree_str" "$git_str"

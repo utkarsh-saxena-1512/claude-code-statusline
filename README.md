@@ -8,7 +8,7 @@ A custom statusline script for [Claude Code](https://claude.ai/claude-code) that
 
 ```
 🤖 Claude Sonnet 4.6 | 🧠 12% | 💰 $0.04 | ⏱️ 5h ████░░░░░░ 42% resets 2:00PM
-🌳 my-feature | 🌿 main +42 -7
+📁 my-project | 🌳 my-feature | 🌿 main +42 -7
 ```
 
 | Field | Description |
@@ -17,6 +17,7 @@ A custom statusline script for [Claude Code](https://claude.ai/claude-code) that
 | 🧠 Context | Context window usage percentage |
 | 💰 Cost | Cumulative session cost in USD |
 | ⏱️ Rate Limit | 5-hour rate limit usage bar, percentage, and reset time |
+| 📁 Folder | Current working directory name |
 | 🌳 Worktree | Active git worktree name |
 | 🌿 Branch | Current git branch with lines added/removed |
 
