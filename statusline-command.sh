@@ -5,8 +5,6 @@ model=$(echo "$input" | jq -r '.model.display_name // "Unknown Model"')
 used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 worktree=$(echo "$input" | jq -r '.worktree.name // empty')
 total_cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
-lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // empty')
-lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // empty')
 current_dir=$(echo "$input" | jq -r '.worktree.original_cwd // empty')
 rl_5h_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' | awk '{printf "%.0f", $1}')
 rl_5h_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
@@ -32,13 +30,19 @@ RED='\033[31m'
 RESET='\033[0m'
 
 git_str=""
-if [ -n "$current_dir" ] && cd "$current_dir" 2>/dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+if git rev-parse --git-dir > /dev/null 2>&1; then
   branch=$(git branch --show-current 2>/dev/null)
+  [ -z "$branch" ] && branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  staged=$(git diff --cached --numstat 2>/dev/null | wc -l | tr -d ' ')
+  modified=$(git diff --numstat 2>/dev/null | wc -l | tr -d ' ')
 
-  git_str="🌿 ${branch}"
-  [ -n "$lines_added" ] && [ "$lines_added" -gt 0 ] && git_str="${git_str} $(printf "${GREEN}+${lines_added}${RESET}")"
-  [ -n "$lines_removed" ] && [ "$lines_removed" -gt 0 ] && git_str="${git_str} $(printf "${RED}-${lines_removed}${RESET}")"
+  git_str="$branch"
+  [ "$staged" -gt 0 ] && git_str="${git_str} $(printf "${GREEN}+${staged}${RESET}")"
+  [ "$modified" -gt 0 ] && git_str="${git_str} $(printf "${YELLOW}~${modified}${RESET}")"
+else
+  git_str="no branch"
 fi
+
 
 if [ -n "$total_cost" ]; then
   cost_display=$(awk "BEGIN { printf \"%.2f\", $total_cost }")
@@ -79,4 +83,4 @@ rate_limit_str="${rate_limit_str}$(format_rl "$rl_5h_pct" "$rl_5h_reset" "5h")"
 
 repo_root=$(cd "$current_dir" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null || echo "$current_dir")
 dir_display=$(basename "$repo_root")
-printf "🤖 %s | 🧠 %s | 💰 %s | ⏱️ %s\n📁 %s | 🌳 %s | %s" "$model" "$usage_str" "$block_str" "$rate_limit_str" "$dir_display" "$worktree_str" "$git_str"
+printf "🤖 %s | 🧠 %s | 💰 %s | ⏱️ %s\n📁 %s | 🌳 %s | 🌿 %s" "$model" "$usage_str" "$block_str" "$rate_limit_str" "$dir_display" "$worktree_str" "$git_str"
